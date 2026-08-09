@@ -2,18 +2,22 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Clapperboard, Menu, X } from "lucide-react";
+import { List, MagnifyingGlass, X } from "@phosphor-icons/react";
 import { useState } from "react";
 
 const navigation = [
-  { href: "/", label: "Inicio" },
+  { href: "/", label: "Hoy" },
   { href: "/series", label: "Series" },
-  { href: "/episodios", label: "Episodios" },
-  { href: "/estrenos", label: "Estrenos" },
-  { href: "/finales", label: "Finales" },
-  { href: "/top-50", label: "Top 50" },
   { href: "/peliculas", label: "Películas" },
+  { href: "/episodios", label: "Calendarios" },
+  { href: "/top-50", label: "Rankings" },
 ];
+
+function editionDate() {
+  return new Intl.DateTimeFormat("es-CL", { weekday: "long", day: "numeric", month: "long", year: "numeric" })
+    .format(new Date())
+    .toUpperCase();
+}
 
 export function SiteHeader() {
   const pathname = usePathname();
@@ -23,9 +27,11 @@ export function SiteHeader() {
     <header className="site-header">
       <div className="header-inner shell">
         <Link className="brand" href="/" aria-label="D' Series y Pelis, inicio">
-          <span className="brand-mark"><Clapperboard size={21} strokeWidth={1.8} /></span>
-          <span><strong>D&apos;</strong> SERIES <i>Y</i> PELIS</span>
+          <strong>D&apos;</strong>
+          <span>SERIES<br /><i>Y</i> PELIS<small>LA GUÍA CULTURAL</small></span>
         </Link>
+
+        <div className="edition-stamp"><span>EDICIÓN DIGITAL</span><strong>{editionDate()}</strong></div>
 
         <nav className={`main-nav ${open ? "is-open" : ""}`} aria-label="Navegación principal">
           {navigation.map((item) => {
@@ -34,8 +40,9 @@ export function SiteHeader() {
           })}
         </nav>
 
+        <button className="search-button" aria-label="Buscar en el catálogo"><MagnifyingGlass size={23} /></button>
         <button className="menu-button" onClick={() => setOpen((value) => !value)} aria-expanded={open} aria-label="Abrir navegación">
-          {open ? <X size={22} /> : <Menu size={22} />}
+          {open ? <X size={25} /> : <List size={25} />}
         </button>
       </div>
     </header>

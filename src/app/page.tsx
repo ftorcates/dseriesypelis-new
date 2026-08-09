@@ -1,7 +1,6 @@
 import Link from "next/link";
 import { ArrowRight, CalendarDays, Film, Sparkles } from "lucide-react";
 import { Hero } from "@/features/home/components/hero";
-import { StatsStrip } from "@/features/home/components/stats-strip";
 import { MediaCard } from "@/features/catalog/components/media-card";
 import { Poster } from "@/features/catalog/components/poster";
 import { DemoNotice } from "@/shared/components/demo-notice";
@@ -12,17 +11,17 @@ export default async function Home() {
   const hub = await getContentHub();
   const featured = hub.series.find((item) => item.featured) ?? hub.series[0];
   const premieres = sortByDate(hub.series, "premiereDate");
-  const nextPremiere = premieres.find((item) => item.slug !== featured.slug);
   const ranking = sortByScore(hub.series).slice(0, 5);
   const episodes = [...hub.episodes].sort((a, b) => a.date.localeCompare(b.date)).slice(0, 4);
+  const premiereRail = [...hub.movies, ...premieres].filter((item) => item.releaseDate || item.premiereDate).sort((a, b) => (a.releaseDate ?? a.premiereDate ?? "").localeCompare(b.releaseDate ?? b.premiereDate ?? ""));
+  const illustratedPremieres = [...premiereRail.filter((item) => item.posterUrl), ...premiereRail.filter((item) => !item.posterUrl)].slice(0, 3);
 
   return (
     <>
-      <Hero featured={featured} nextPremiere={nextPremiere} />
+      <Hero featured={featured} episodes={hub.episodes} premieres={illustratedPremieres} />
       <DemoNotice visible={hub.isDemo} />
-      <StatsStrip series={hub.series.length} upcoming={premieres.length} episodes={hub.episodes.length} movies={hub.movies.length} />
 
-      <section className="section shell">
+      <section className="section shell home-agenda-more">
         <SectionHeading eyebrow="Agenda semanal" title="Esta semana no te pierdas" copy="Los episodios que marcan el ritmo de los próximos días." href="/episodios" />
         <div className="episode-rail">
           {episodes.map((event) => (
@@ -36,7 +35,7 @@ export default async function Home() {
         </div>
       </section>
 
-      <section className="section section-tinted">
+      <section className="section section-tinted home-ranking">
         <div className="shell">
           <SectionHeading eyebrow="Selección editorial" title="Las mejor puntuadas" copy="Un ranking vivo, alimentado por tu catálogo y ordenado por IMDb." href="/top-50" linkLabel="Explorar el Top 50" />
           <div className="media-grid ranking-preview">

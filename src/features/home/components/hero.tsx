@@ -1,59 +1,88 @@
-"use client";
-
 import Link from "next/link";
-import { ArrowRight, CalendarDays, Play } from "lucide-react";
-import { useLayoutEffect, useRef } from "react";
-import gsap from "gsap";
-import type { MediaItem } from "@/shared/lib/types";
+import { ArrowRight } from "@phosphor-icons/react/dist/ssr";
 import { Poster } from "@/features/catalog/components/poster";
+import type { EpisodeEvent, MediaItem } from "@/shared/lib/types";
 
-export function Hero({ featured, nextPremiere }: { featured: MediaItem; nextPremiere?: MediaItem }) {
-  const root = useRef<HTMLElement>(null);
+const dayNames = ["DOM", "LUN", "MAR", "MIÉ", "JUE", "VIE", "SÁB"];
+const monthNames = ["ENE", "FEB", "MAR", "ABR", "MAY", "JUN", "JUL", "AGO", "SEP", "OCT", "NOV", "DIC"];
 
-  useLayoutEffect(() => {
-    const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    if (reduce || !root.current) return;
-    const context = gsap.context(() => {
-      gsap.from(".hero-copy > *", { y: 34, opacity: 0, duration: 0.9, stagger: 0.09, ease: "power3.out" });
-      gsap.from(".hero-stage", { y: 45, rotateY: -8, opacity: 0, duration: 1.2, ease: "power3.out" });
-      gsap.to(".float-card", { y: -10, duration: 2.8, repeat: -1, yoyo: true, ease: "sine.inOut" });
-    }, root);
-    return () => context.revert();
-  }, []);
+function startOfWeek(value: Date) {
+  const date = new Date(value);
+  const day = date.getDay();
+  date.setDate(date.getDate() - (day === 0 ? 6 : day - 1));
+  date.setHours(12, 0, 0, 0);
+  return date;
+}
+
+function dateKey(date: Date) {
+  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
+}
+
+function formatPremiere(value?: string) {
+  if (!value) return "Fecha por confirmar";
+  return new Intl.DateTimeFormat("es-CL", { day: "numeric", month: "long" }).format(new Date(`${value}T12:00:00`));
+}
+
+export function Hero({ featured, episodes, premieres }: { featured: MediaItem; episodes: EpisodeEvent[]; premieres: MediaItem[] }) {
+  const today = new Date();
+  const start = startOfWeek(today);
+  const days = Array.from({ length: 7 }, (_, index) => {
+    const date = new Date(start);
+    date.setDate(start.getDate() + index);
+    return date;
+  });
+  const recommendation = /ficha completa/i.test(featured.synopsis)
+    ? `${featured.title} continúa ${featured.season ? `con ${featured.season.toLowerCase()}` : "en nuestra selección"} a través de ${featured.platform}. Una de las series mejor valoradas de tu catálogo.`
+    : featured.synopsis;
 
   return (
-    <section className="hero" ref={root}>
-      <div className="hero-aurora hero-aurora-one" />
-      <div className="hero-aurora hero-aurora-two" />
-      <div className="shell hero-grid">
-        <div className="hero-copy">
-          <span className="eyebrow"><i className="live-dot" /> Siempre es tiempo de series</span>
-          <h1>Todo lo que quieres ver, <em>justo a tiempo.</em></h1>
-          <p>Estrenos, episodios y finales en un solo lugar. Tu próxima obsesión empieza aquí.</p>
-          <div className="hero-actions">
-            <Link className="button button-primary" href="/episodios"><CalendarDays size={18} /> Ver esta semana</Link>
-            <Link className="button button-ghost" href={`/series/${featured.slug}`}><Play size={17} fill="currentColor" /> Explorar serie</Link>
-          </div>
-          <div className="hero-featured-meta">
-            <span>EN CARTELERA</span>
-            <strong>{featured.title}</strong>
-            <small>{featured.season} · {featured.platform} · IMDb {featured.score?.toFixed(1) ?? "—"}</small>
-          </div>
-        </div>
+    <section className="editorial-hero shell">
+      <div className="hero-title-row">
+        <span>AGENDA · SERIES Y PELÍCULAS</span>
+        <h1>¿Qué veo esta semana?</h1>
+      </div>
 
-        <div className="hero-stage" aria-hidden="true">
-          <div className="stage-glow" />
-          <div className="stage-poster stage-poster-back"><Poster title="The Bear" tone="crimson" /></div>
-          <div className="stage-poster stage-poster-main"><Poster title={featured.title} url={featured.posterUrl} tone={featured.posterTone} /></div>
-          <div className="float-card float-score"><span>IMDb</span><strong>{featured.score?.toFixed(1) ?? "—"}</strong><small>Favorita del público</small></div>
-          {nextPremiere && <div className="float-card float-premiere"><span>PRÓXIMO ESTRENO</span><strong>{nextPremiere.title}</strong><small>{nextPremiere.premiereDate ?? nextPremiere.releaseDate}</small></div>}
-          <div className="stage-caption"><span>Ahora destacado</span><strong>{featured.title}</strong></div>
-        </div>
+      <div className="week-ledger">
+        {days.map((day) => {
+          const key = dateKey(day);
+          const daily = episodes.filter((event) => event.date === key);
+          const isToday = key === dateKey(today);
+          return (
+            <article className={isToday ? "ledger-day is-today" : "ledger-day"} key={key}>
+              <div className="ledger-date"><span>{dayNames[day.getDay()]}</span>{isToday && <em>HOY</em>}<strong>{String(day.getDate()).padStart(2, "0")}</strong><small>{monthNames[day.getMonth()]}</small></div>
+              <div className="ledger-events">
+                {daily.length ? daily.slice(0, 2).map((event) => (
+                  <Link href={event.href ?? `/series/${event.seriesSlug}`} key={event.id}>
+                    <strong>{event.title}</strong><span>{event.episode}</span><small>{event.platform}</small>
+                  </Link>
+                )) : <p>Sin estrenos<br />registrados</p>}
+              </div>
+            </article>
+          );
+        })}
       </div>
-      <div className="hero-ticker" aria-label="Categorías destacadas">
-        <div><span>ESTRENOS</span><i>✦</i><span>EPISODIOS</span><i>✦</i><span>FINALES</span><i>✦</i><span>TOP IMDb</span><i>✦</i><span>PELÍCULAS</span><i>✦</i><span>ESTRENOS</span><i>✦</i></div>
+
+      <div className="hero-feature-grid">
+        <Link className="feature-image" href={`/series/${featured.slug}`}><Poster title={featured.title} url={featured.posterUrl} tone={featured.posterTone} /></Link>
+        <article className="daily-pick">
+          <span className="eyebrow">Recomendación del día</span>
+          <h2>{featured.title}</h2>
+          <p className="pick-meta">{featured.season ?? featured.status} · {featured.platform}</p>
+          <div className="pick-score"><b>IMDb</b><strong>{featured.score?.toFixed(1) ?? "—"}<small>/10</small></strong></div>
+          <p>{recommendation}</p>
+          <Link className="button button-primary" href={`/series/${featured.slug}`}>Ver ficha <ArrowRight size={18} /></Link>
+        </article>
+        <aside className="premiere-list">
+          <div className="premiere-head"><span>Próximos estrenos</span><Link href="/peliculas/calendario">PELÍCULAS</Link></div>
+          {premieres.slice(0, 3).map((item) => (
+            <Link href={item.kind === "movie" ? `/peliculas/${item.slug}` : `/series/${item.slug}`} key={item.id}>
+              <div><Poster title={item.title} url={item.posterUrl} tone={item.posterTone} /></div>
+              <span><strong>{item.title}</strong><small>{formatPremiere(item.premiereDate ?? item.releaseDate)}</small><em>{item.platform}</em></span>
+            </Link>
+          ))}
+          <Link className="premiere-all" href="/estrenos">Ver todos los estrenos <ArrowRight size={16} /></Link>
+        </aside>
       </div>
-      <Link className="hero-corner-link" href="/estrenos">Próximamente <ArrowRight size={16} /></Link>
     </section>
   );
 }

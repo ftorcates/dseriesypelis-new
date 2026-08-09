@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Star } from "lucide-react";
+import { Star } from "@phosphor-icons/react/dist/ssr";
 import type { MediaItem } from "@/shared/lib/types";
 import { Poster } from "@/features/catalog/components/poster";
 
@@ -17,7 +17,7 @@ export function MediaCard({ item, rank }: { item: MediaItem; rank?: number }) {
         <div className="media-meta">
           <span>{item.season ?? item.releaseYear ?? item.releaseDate?.slice(0, 4) ?? "Próximamente"}</span>
           <span>{item.latamPlatform ?? item.platform}</span>
-          {item.score != null && <span className="score"><Star size={13} fill="currentColor" />{item.score.toFixed(1)}</span>}
+          {item.score != null && <span className="score"><Star size={13} weight="fill" />{item.score.toFixed(1)}</span>}
         </div>
       </div>
     </Link>
