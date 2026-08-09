@@ -1,6 +1,11 @@
 import type { Metadata } from "next";
 import { SiteFooter } from "@/shared/components/site-footer";
 import { SiteHeader } from "@/shared/components/site-header";
+import "@fontsource/bodoni-moda/400.css";
+import "@fontsource/bodoni-moda/600.css";
+import "@fontsource/barlow-condensed/500.css";
+import "@fontsource/barlow-condensed/600.css";
+import "@fontsource/barlow-condensed/700.css";
 import "./globals.css";
 
 export const metadata: Metadata = {
