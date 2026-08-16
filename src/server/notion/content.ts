@@ -143,7 +143,7 @@ const getCachedMovieRanking = unstable_cache(async (year?: number): Promise<Movi
     console.error("No se pudo cargar el ranking de películas desde Notion.", error);
     return { movies: demoMovies, isDemo: true };
   }
-}, ["d-series-movie-ranking-v4"], { revalidate: 900, tags: ["notion-movie-ranking"] });
+}, ["d-series-movie-ranking-v5"], { revalidate: 900, tags: ["notion-movie-ranking"] });
 
 const getCachedMovieDetail = unstable_cache(async (pageId: string) => getNotionMovieById(pageId), ["d-series-movie-detail-v4"], {
   revalidate: 900,
