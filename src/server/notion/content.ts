@@ -150,16 +150,16 @@ const getCachedMovieDetail = unstable_cache(async (pageId: string) => getNotionM
   tags: ["notion-movie-detail"],
 });
 
-const getCachedSeriesDetail = unstable_cache(async (pageId: string) => getNotionSeriesById(pageId), ["d-series-series-detail-v4"], {
+const getCachedSeriesDetail = unstable_cache(async (pageId: string) => getNotionSeriesById(pageId), ["d-series-series-detail-v5"], {
   revalidate: 900,
   tags: ["notion-series-detail"],
 });
 
-export const getSeriesCatalogHub = unstable_cache(loadSeriesCatalog, ["d-series-series-catalog-v4"], { revalidate: 900, tags: ["notion-series-catalog"] });
-export const getSeriesPremiereHub = unstable_cache(loadSeriesPremieres, ["d-series-series-premieres-v4"], { revalidate: 900, tags: ["notion-series-premieres"] });
-export const getSeriesFinaleHub = unstable_cache(loadSeriesFinales, ["d-series-series-finales-v4"], { revalidate: 900, tags: ["notion-series-finales"] });
+export const getSeriesCatalogHub = unstable_cache(loadSeriesCatalog, ["d-series-series-catalog-v5"], { revalidate: 900, tags: ["notion-series-catalog"] });
+export const getSeriesPremiereHub = unstable_cache(loadSeriesPremieres, ["d-series-series-premieres-v5"], { revalidate: 900, tags: ["notion-series-premieres"] });
+export const getSeriesFinaleHub = unstable_cache(loadSeriesFinales, ["d-series-series-finales-v5"], { revalidate: 900, tags: ["notion-series-finales"] });
 export const getEpisodeWeekHub = unstable_cache(loadEpisodeWeek, ["d-series-episode-week-v4"], { revalidate: 900, tags: ["notion-episode-week"] });
-export const getSeriesRankingHub = unstable_cache(loadSeriesRanking, ["d-series-series-ranking-v4"], { revalidate: 900, tags: ["notion-series-ranking"] });
+export const getSeriesRankingHub = unstable_cache(loadSeriesRanking, ["d-series-series-ranking-v6"], { revalidate: 900, tags: ["notion-series-ranking"] });
 export const getMovieLandingHub = unstable_cache(loadMovieLanding, ["d-series-movie-landing-v4"], { revalidate: 900, tags: ["notion-movie-landing"] });
 export const getMovieCalendarHub = unstable_cache(loadMovieCalendar, ["d-series-movie-calendar-v5"], { revalidate: 900, tags: ["notion-movie-calendar"] });
 

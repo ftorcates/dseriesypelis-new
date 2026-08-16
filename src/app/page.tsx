@@ -7,18 +7,26 @@ import { DemoNotice } from "@/shared/components/demo-notice";
 import { SectionHeading } from "@/shared/components/section-heading";
 import { getContentHub, sortByDate, sortByScore } from "@/server/notion/content";
 
+function santiagoDateKey() {
+  const parts = new Intl.DateTimeFormat("en-US", { timeZone: "America/Santiago", year: "numeric", month: "2-digit", day: "2-digit" }).formatToParts(new Date());
+  const value = Object.fromEntries(parts.map((part) => [part.type, part.value]));
+  return `${value.year}-${value.month}-${value.day}`;
+}
+
 export default async function Home() {
   const hub = await getContentHub();
-  const featured = hub.series.find((item) => item.featured) ?? hub.series[0];
-  const premieres = sortByDate(hub.series, "premiereDate");
+  const today = santiagoDateKey();
+  const recommendationPool = sortByScore(hub.series).filter((item) => item.posterUrl && (item.score ?? 0) >= 7).slice(0, 30);
+  const dayNumber = Math.floor(Date.parse(`${today}T00:00:00Z`) / 86_400_000);
+  const featured = recommendationPool[dayNumber % recommendationPool.length] ?? hub.series.find((item) => item.posterUrl) ?? hub.series[0];
+  const seriesPremieres = sortByDate(hub.series, "premiereDate").filter((item) => (item.premiereDate ?? "") >= today).slice(0, 12);
+  const moviePremieres = sortByDate(hub.movies, "releaseDate").filter((item) => (item.releaseDate ?? "") >= today).slice(0, 12);
   const ranking = sortByScore(hub.series).slice(0, 5);
   const episodes = [...hub.episodes].sort((a, b) => a.date.localeCompare(b.date)).slice(0, 4);
-  const premiereRail = [...hub.movies, ...premieres].filter((item) => item.releaseDate || item.premiereDate).sort((a, b) => (a.releaseDate ?? a.premiereDate ?? "").localeCompare(b.releaseDate ?? b.premiereDate ?? ""));
-  const illustratedPremieres = [...premiereRail.filter((item) => item.posterUrl), ...premiereRail.filter((item) => !item.posterUrl)].slice(0, 3);
 
   return (
     <>
-      <Hero featured={featured} episodes={hub.episodes} premieres={illustratedPremieres} />
+      <Hero featured={featured} episodes={hub.episodes} seriesPremieres={seriesPremieres} moviePremieres={moviePremieres} />
       <DemoNotice visible={hub.isDemo} />
 
       <section className="section shell home-agenda-more">

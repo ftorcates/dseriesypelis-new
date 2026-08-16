@@ -24,6 +24,11 @@ for (const route of ["/", "/series", "/episodios", "/estrenos", "/finales", "/to
 
 await page.goto(`${baseUrl}/`, { waitUntil: "networkidle", timeout: 120000 });
 await page.screenshot({ path: "implementation-desktop.png" });
+const seriesPremieres = await page.locator(".premiere-item strong").allTextContents();
+await page.locator(".premiere-tabs button").filter({ hasText: "Películas" }).click();
+await page.waitForTimeout(250);
+const moviePremieres = await page.locator(".premiere-item strong").allTextContents();
+results.interactions.premiereTabs = seriesPremieres.join("|") !== moviePremieres.join("|");
 
 await page.goto(`${baseUrl}/estrenos`, { waitUntil: "networkidle", timeout: 120000 });
 const monthBefore = await page.locator(".calendar-toolbar h2").textContent();

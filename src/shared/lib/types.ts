@@ -41,6 +41,8 @@ export interface MediaItem {
   interested?: boolean;
   runtime?: number;
   status: MediaStatus;
+  renewalStatus?: string;
+  airingStatus?: string;
   imdbUrl?: string;
   featured?: boolean;
 }
