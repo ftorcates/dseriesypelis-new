@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { ArrowRight } from "@phosphor-icons/react/dist/ssr";
 import { Poster } from "@/features/catalog/components/poster";
+import { PremiereList } from "@/features/home/components/premiere-list";
 import type { EpisodeEvent, MediaItem } from "@/shared/lib/types";
 
 const dayNames = ["DOM", "LUN", "MAR", "MIÉ", "JUE", "VIE", "SÁB"];
@@ -18,12 +19,7 @@ function dateKey(date: Date) {
   return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
 }
 
-function formatPremiere(value?: string) {
-  if (!value) return "Fecha por confirmar";
-  return new Intl.DateTimeFormat("es-CL", { day: "numeric", month: "long" }).format(new Date(`${value}T12:00:00`));
-}
-
-export function Hero({ featured, episodes, premieres }: { featured: MediaItem; episodes: EpisodeEvent[]; premieres: MediaItem[] }) {
+export function Hero({ featured, episodes, seriesPremieres, moviePremieres }: { featured: MediaItem; episodes: EpisodeEvent[]; seriesPremieres: MediaItem[]; moviePremieres: MediaItem[] }) {
   const today = new Date();
   const start = startOfWeek(today);
   const days = Array.from({ length: 7 }, (_, index) => {
@@ -72,16 +68,7 @@ export function Hero({ featured, episodes, premieres }: { featured: MediaItem; e
           <p>{recommendation}</p>
           <Link className="button button-primary" href={`/series/${featured.slug}`}>Ver ficha <ArrowRight size={18} /></Link>
         </article>
-        <aside className="premiere-list">
-          <div className="premiere-head"><span>Próximos estrenos</span><Link href="/peliculas/calendario">PELÍCULAS</Link></div>
-          {premieres.slice(0, 3).map((item) => (
-            <Link href={item.kind === "movie" ? `/peliculas/${item.slug}` : `/series/${item.slug}`} key={item.id}>
-              <div><Poster title={item.title} url={item.posterUrl} tone={item.posterTone} /></div>
-              <span><strong>{item.title}</strong><small>{formatPremiere(item.premiereDate ?? item.releaseDate)}</small><em>{item.platform}</em></span>
-            </Link>
-          ))}
-          <Link className="premiere-all" href="/estrenos">Ver todos los estrenos <ArrowRight size={16} /></Link>
-        </aside>
+        <PremiereList series={seriesPremieres} movies={moviePremieres} />
       </div>
     </section>
   );

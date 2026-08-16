@@ -124,7 +124,9 @@ function normalizeSeriesPage(page: NotionPage, index = 0): MediaItem | undefined
     const title = text(p["Título"] ?? p["Titulo"] ?? p["Name"]);
     if (!title) return undefined;
     const premiereDate = date(p["FechaInicio"] ?? p["Estreno"]);
-    const renewal = text(p["Renovacion"] ?? p["Renovación"] ?? p["Estado"]);
+    const renewalStatus = text(p["Renovacion"] ?? p["Renovación"]);
+    const airingStatus = text(p["EstadoEmision"] ?? p["Estado Emision"] ?? p["Estado Emisión"]);
+    const legacyStatus = text(p["Estado"]);
     const imdbText = text(p["IMDB"]);
     const imdbScore = Number.parseFloat(imdbText.replace(",", "."));
 
@@ -150,7 +152,9 @@ function normalizeSeriesPage(page: NotionPage, index = 0): MediaItem | undefined
       watchedEpisodes: number(p["EpisodiosVistos"]),
       premiereDate,
       finaleDate: date(p["FechaFin"]),
-      status: mapStatus(renewal, premiereDate),
+      status: mapStatus(renewalStatus || airingStatus || legacyStatus, premiereDate),
+      renewalStatus: renewalStatus || undefined,
+      airingStatus: airingStatus || undefined,
       imdbUrl: /^https?:/.test(imdbText) ? imdbText : undefined,
       featured: index === 0,
     };
@@ -204,16 +208,24 @@ export async function getNotionTopSeries(): Promise<MediaItem[]> {
   if (!sourceId) return [];
   const pages = await queryDataSource(sourceId, {
     filter: { and: [
+      { property: "UltimaEmitida", checkbox: { equals: true } },
       { property: "IMDB", rich_text: { is_not_empty: true } },
       { property: "IMDB", rich_text: { does_not_equal: "?" } },
     ] },
     sorts: [{ property: "IMDB", direction: "descending" }],
-  }, 100);
-  return pages
+  }, 150);
+  const ranked = pages
     .flatMap((page, index) => normalizeSeriesPage(page, index) ?? [])
     .filter((series) => series.score != null)
-    .sort((a, b) => (b.score ?? 0) - (a.score ?? 0))
-    .slice(0, 50);
+    .sort((a, b) => (b.score ?? 0) - (a.score ?? 0));
+
+  const uniqueByTitle = new Map<string, MediaItem>();
+  for (const series of ranked) {
+    const titleKey = slugify(series.title);
+    if (!uniqueByTitle.has(titleKey)) uniqueByTitle.set(titleKey, series);
+  }
+
+  return [...uniqueByTitle.values()].slice(0, 50);
 }
 
 export async function getNotionSeriesById(pageId: string): Promise<MediaItem | undefined> {
