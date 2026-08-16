@@ -356,6 +356,7 @@ export async function getNotionTopMovies(year?: number): Promise<MediaItem[]> {
   const sourceId = movieSourceId();
   if (!sourceId) return [];
   const conditions: Array<Record<string, unknown>> = [
+    { property: "Etiquetas", multi_select: { contains: "Estreno" } },
     { property: "IMDb", rich_text: { is_not_empty: true } },
     { property: "IMDb", rich_text: { does_not_equal: "?" } },
   ];
@@ -363,12 +364,19 @@ export async function getNotionTopMovies(year?: number): Promise<MediaItem[]> {
   const pages = await queryDataSource(sourceId, {
     filter: { and: conditions },
     sorts: [{ property: "IMDb", direction: "descending" }],
-  }, 100);
-  return pages
+  }, 150);
+  const ranked = pages
     .flatMap((page, index) => normalizeMoviePage(page, index) ?? [])
     .filter((movie) => movie.score != null)
-    .sort((a, b) => (b.score ?? 0) - (a.score ?? 0))
-    .slice(0, 50);
+    .sort((a, b) => (b.score ?? 0) - (a.score ?? 0));
+
+  const uniqueMovies = new Map<string, MediaItem>();
+  for (const movie of ranked) {
+    const movieKey = `${slugify(movie.title)}|${movie.releaseYear ?? ""}`;
+    if (!uniqueMovies.has(movieKey)) uniqueMovies.set(movieKey, movie);
+  }
+
+  return [...uniqueMovies.values()].slice(0, 50);
 }
 
 export async function getNotionMovieById(pageId: string): Promise<MediaItem | undefined> {
