@@ -23,12 +23,21 @@ for (const route of ["/", "/series", "/episodios", "/estrenos", "/finales", "/to
 }
 
 await page.goto(`${baseUrl}/`, { waitUntil: "networkidle", timeout: 120000 });
+await page.waitForTimeout(2000);
+results.interactions.heroIntroCompleted = await page.locator(".motion-hero-title").evaluate((element) => Number.parseFloat(getComputedStyle(element).opacity) > 0.99);
 await page.screenshot({ path: "implementation-desktop.png" });
 const seriesPremieres = await page.locator(".premiere-item strong").allTextContents();
 await page.locator(".premiere-tabs button").filter({ hasText: "Películas" }).click();
 await page.waitForTimeout(250);
 const moviePremieres = await page.locator(".premiere-item strong").allTextContents();
 results.interactions.premiereTabs = seriesPremieres.join("|") !== moviePremieres.join("|");
+
+await page.locator(".home-ranking").scrollIntoViewIfNeeded();
+await page.waitForTimeout(800);
+results.interactions.scrollRevealCompleted = await page.locator(".home-ranking").evaluate((element) => element.classList.contains("is-revealed") && Number.parseFloat(getComputedStyle(element).opacity) > 0.99);
+await page.evaluate(() => window.scrollTo({ top: 180, behavior: "instant" }));
+await page.waitForTimeout(250);
+results.interactions.compactHeader = await page.locator(".site-header").evaluate((element) => element.classList.contains("is-compact"));
 
 await page.goto(`${baseUrl}/estrenos`, { waitUntil: "networkidle", timeout: 120000 });
 const monthBefore = await page.locator(".calendar-toolbar h2").textContent();
@@ -39,12 +48,17 @@ results.interactions.calendarNext = monthBefore !== monthAfter;
 
 await page.setViewportSize({ width: 390, height: 844 });
 await page.goto(`${baseUrl}/`, { waitUntil: "networkidle", timeout: 120000 });
+await page.waitForTimeout(2000);
 results.interactions.mobileHasOverflow = await page.evaluate(() => document.documentElement.scrollWidth > document.documentElement.clientWidth);
 await page.screenshot({ path: "implementation-mobile.png" });
 await page.getByRole("button", { name: "Abrir navegación" }).click();
 await page.waitForTimeout(250);
 results.interactions.mobileMenuVisible = await page.locator(".main-nav.is-open").isVisible();
 await page.screenshot({ path: "implementation-mobile-menu.png" });
+
+await page.emulateMedia({ reducedMotion: "reduce" });
+await page.goto(`${baseUrl}/`, { waitUntil: "networkidle", timeout: 120000 });
+results.interactions.reducedMotion = await page.evaluate(() => !document.documentElement.classList.contains("motion-enabled"));
 
 await browser.close();
 process.stdout.write(`${JSON.stringify(results, null, 2)}\n`);

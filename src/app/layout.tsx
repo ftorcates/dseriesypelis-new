@@ -18,7 +18,7 @@ export const dynamic = "force-dynamic";
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="es">
+    <html lang="es" data-scroll-behavior="smooth">
       <body><SiteHeader /><main>{children}</main><SiteFooter /></body>
     </html>
   );

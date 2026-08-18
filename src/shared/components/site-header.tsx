@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { List, MagnifyingGlass, X } from "@phosphor-icons/react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 const navigation = [
   { href: "/", label: "Hoy" },
@@ -22,9 +22,27 @@ function editionDate() {
 export function SiteHeader() {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
+  const [compact, setCompact] = useState(false);
+
+  useEffect(() => {
+    let frame = 0;
+    const updateHeader = () => {
+      frame = 0;
+      setCompact(window.scrollY > 72);
+    };
+    const handleScroll = () => {
+      if (!frame) frame = window.requestAnimationFrame(updateHeader);
+    };
+    updateHeader();
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    return () => {
+      window.removeEventListener("scroll", handleScroll);
+      if (frame) window.cancelAnimationFrame(frame);
+    };
+  }, []);
 
   return (
-    <header className="site-header">
+    <header className={`site-header ${compact ? "is-compact" : ""}`}>
       <div className="header-inner shell">
         <Link className="brand" href="/" aria-label="D' Series y Pelis, inicio">
           <strong>D&apos;</strong>
