@@ -34,8 +34,9 @@ export function Hero({ featured, episodes, seriesPremieres, moviePremieres }: { 
   return (
     <section className="editorial-hero shell">
       <div className="hero-title-row">
-        <span>AGENDA · SERIES Y PELÍCULAS</span>
-        <h1>¿Qué veo esta semana?</h1>
+        <span className="motion-hero-eyebrow">AGENDA · SERIES Y PELÍCULAS</span>
+        <div className="hero-title-mask"><h1 className="motion-hero-title">¿Qué veo esta semana?</h1></div>
+        <span className="hero-rule" aria-hidden="true" />
       </div>
 
       <div className="week-ledger">
@@ -59,14 +60,16 @@ export function Hero({ featured, episodes, seriesPremieres, moviePremieres }: { 
       </div>
 
       <div className="hero-feature-grid">
-        <Link className="feature-image" href={`/series/${featured.slug}`}><Poster title={featured.title} url={featured.posterUrl} tone={featured.posterTone} /></Link>
+        <Link className="feature-image motion-feature-image" href={`/series/${featured.slug}`}><Poster title={featured.title} url={featured.posterUrl} tone={featured.posterTone} /></Link>
         <article className="daily-pick">
-          <span className="eyebrow">Recomendación del día</span>
-          <h2>{featured.title}</h2>
-          <p className="pick-meta">{featured.season ?? featured.status} · {featured.platform}</p>
-          <div className="pick-score"><b>IMDb</b><strong>{featured.score?.toFixed(1) ?? "—"}<small>/10</small></strong></div>
-          <p>{recommendation}</p>
-          <Link className="button button-primary" href={`/series/${featured.slug}`}>Ver ficha <ArrowRight size={18} /></Link>
+          <span className="eyebrow motion-pick-detail">Recomendación del día</span>
+          <h2 className="motion-pick-title" aria-label={featured.title}>
+            {featured.title.split(/\s+/).map((word, index) => <span className="motion-pick-word" aria-hidden="true" key={`${word}-${index}`}>{word}</span>)}
+          </h2>
+          <p className="pick-meta motion-pick-detail">{featured.season ?? featured.status} · {featured.platform}</p>
+          <div className="pick-score motion-pick-detail"><b>IMDb</b><strong><span data-motion-score>{featured.score?.toFixed(1) ?? "—"}</span><small>/10</small></strong></div>
+          <p className="motion-pick-detail">{recommendation}</p>
+          <Link className="button button-primary motion-pick-detail" href={`/series/${featured.slug}`}>Ver ficha <ArrowRight size={18} /></Link>
         </article>
         <PremiereList series={seriesPremieres} movies={moviePremieres} />
       </div>
